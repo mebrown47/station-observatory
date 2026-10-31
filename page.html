@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Station Observatory</title>
+<style>
+  :root{--bg:#0e1116;--panel:#161b22;--panel2:#1c232c;--line:#2b333d;--fg:#e6edf3;--dim:#8b98a5;
+    --accent:#4aa8ff;--ok:#3fb950;--warn:#d29922;--bad:#f85149}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:14px 22px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header h1{font-size:18px;margin:0;font-weight:650}
+  header .sub{color:var(--dim);font-size:12.5px}
+  header .spacer{flex:1}
+  .status{color:var(--dim);font-size:12px}
+  main{padding:16px 22px;max-width:1500px;margin:0 auto}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle;background:var(--dim)}
+  .dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+  .pill{font-size:11px;padding:2px 9px;border-radius:999px;border:1px solid;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+  .pill.ok{color:var(--ok);border-color:#1f4f2b}.pill.warn{color:var(--warn);border-color:#5c4513}.pill.bad{color:var(--bad);border-color:#6b2226;background:#2a1215}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;min-width:0}
+  .card .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.6px}
+  .card .v{font-size:21px;font-weight:600;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card .v small{font-size:12px;color:var(--dim);font-weight:400}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px;min-width:0}
+  .panel h2{font-size:13px;margin:0 0 8px;font-weight:600;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .panel h2 .hint{color:var(--dim);font-weight:400;font-size:11.5px}
+  .attn{list-style:none;margin:0;padding:0}
+  .attn li{padding:5px 0;border-bottom:1px solid #1b2129;font-size:13px}
+  .attn li:last-child{border-bottom:0}
+  .attn b{font-weight:600;margin-right:6px}
+  .allgood{color:var(--ok);font-size:13px}
+  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px;margin-bottom:14px}
+  @media(max-width:520px){.links{grid-template-columns:minmax(0,1fr)}main,header{padding-left:16px;padding-right:16px}}
+  .link{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;border-top:3px solid var(--line)}
+  .link.ok{border-top-color:var(--ok)}.link.warn{border-top-color:var(--warn)}.link.bad{border-top-color:var(--bad)}
+  .link .head{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+  .link .head h3{margin:0;font-size:16px;font-weight:650;flex:1}
+  .link .what{color:var(--dim);font-size:12px;margin-bottom:8px}
+  .link .why{font-size:12.5px;margin:0 0 8px;padding:6px 9px;border-radius:6px;background:var(--panel2)}
+  .link .why div{margin:1px 0}
+  .bad-t{color:var(--bad)}.warn-t{color:var(--warn)}.ok-t{color:var(--ok)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  td,th{padding:4px 6px;border-bottom:1px solid #1b2129;vertical-align:top;text-align:left}
+  th{color:var(--dim);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  td.k{color:var(--dim);width:92px;white-space:nowrap}
+  tr:last-child td{border-bottom:0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+  .n{color:var(--dim);font-variant-numeric:tabular-nums}
+  .cmd{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);overflow-wrap:anywhere;margin-top:2px}
+  details summary{cursor:pointer;color:var(--dim);font-size:11.5px;list-style:none}
+  details summary::-webkit-details-marker{display:none}
+  details summary::before{content:"▸ "}details[open] summary::before{content:"▾ "}
+  .spark{display:flex;align-items:flex-end;gap:2px;height:34px;margin:4px 0 2px}
+  .spark i{flex:1;background:var(--accent);opacity:.75;border-radius:1px;min-height:1px}
+  .spark i.zero{background:var(--bad);opacity:.6;height:3px!important}
+  .sparkax{display:flex;justify-content:space-between;color:var(--dim);font-size:10.5px}
+  .pages a{color:var(--accent);text-decoration:none;margin-right:12px;font-size:12.5px}
+  .pages a:hover{text-decoration:underline}
+  .pages span{color:var(--dim);font-size:12px;margin-right:12px}
+  .empty{color:var(--dim);padding:16px;text-align:center;font-size:13px}
+  .scroll{overflow-x:auto}
+</style></head>
+<body>
+<header>
+  <h1 id="title">Station Observatory</h1>
+  <span class="sub" id="sub">health of every receiver on this station</span>
+  <span class="spacer"></span>
+  <span class="status" id="status"><span class="dot"></span>loading…</span>
+</header>
+<main>
+  <div class="panel" id="attnp"><h2>Needs attention <span class="hint" id="attnh"></span></h2><ul class="attn" id="attn"></ul></div>
+  <div class="cards" id="host"></div>
+  <div class="links" id="links"></div>
+  <div class="panel">
+    <h2>SDRs <span class="hint">USB receivers plugged into this host, and which program holds each</span></h2>
+    <div class="scroll" id="sdrs"></div>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let D=null;
+function esc(s){return (s==null?"":""+s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function age(s){if(s==null)return "–";s=Math.max(0,Math.round(s));return s>=86400?Math.floor(s/86400)+" d "+Math.floor(s%86400/3600)+" h":
+  s>=3600?Math.floor(s/3600)+" h "+Math.floor(s%3600/60)+" min":s>=60?Math.floor(s/60)+" min":s+" s";}
+function bytes(n){if(n==null)return "–";const u=["B","KB","MB","GB","TB"];let i=0;while(n>=1024&&i<4){n/=1024;i++;}return (n>=100||i===0?Math.round(n):n.toFixed(1))+" "+u[i];}
+function fmt(n){return n==null?"–":n>=1e4?(n/1e3).toFixed(1)+"k":""+n;}
+function pad(x){return String(x).padStart(2,"0");}
+function hm(t){const d=new Date(t*1000);return pad(d.getUTCHours())+":"+pad(d.getUTCMinutes());}
+function card(k,v,sub){return '<div class="card"><div class="k">'+k+'</div><div class="v">'+v+(sub?' <small>'+sub+'</small>':'')+'</div></div>';}
+const WORD={ok:"OK",warn:"Attention",bad:"Down"};
+function samehost(port){const h=location.hostname;return location.protocol+"//"+(h.includes(":")?"["+h+"]":h)+":"+port+"/";}
+
+function compRow(label,c,now){
+  if(!c)return "";
+  let st,detail="";
+  if(c.last_run!==undefined){   // A timer or a job judged by its log.
+    st=c.ok?'<span class="ok-t">ran '+age(now-c.last_run)+' ago</span>':c.load==="not-found"?'<span class="warn-t">not installed</span>':c.last_run?'<span class="warn-t">last ran '+age(now-c.last_run)+' ago</span>':'<span class="warn-t">never ran</span>';
+    detail='<span class="n mono">'+esc(c.unit||c.label)+'</span>';
+  }else{
+    st=c.ok?'<span class="ok-t">running</span>':'<span class="bad-t">'+esc(c.load==="not-found"?"not installed":(c.sub||c.active||"not running"))+'</span>';
+    if(c.pid)st+=' <span class="n">· up '+age(now-c.started)+' · CPU '+c.cpu.toFixed(0)+'% · '+bytes(c.rss)+(c.restarts?' · '+c.restarts+' restarts':'')+'</span>';
+    detail=(c.unit?'<span class="n mono">'+esc(c.unit)+'</span>':'')+(c.cmd?'<details><summary>command line</summary><div class="cmd">'+esc(c.cmd)+'</div></details>':'');
+  }
+  return '<tr><td class="k">'+label+'</td><td>'+st+(detail?'<div>'+detail+'</div>':'')+'</td></tr>';
+}
+function spark(h){
+  if(!h||!h.length)return "";
+  const mx=Math.max(1,...h.map(x=>x.n));
+  return '<div class="spark">'+h.map(x=>'<i class="'+(x.n?"":"zero")+'" style="height:'+Math.max(2,Math.round(34*x.n/mx))+'px" title="'+hm(x.hour)+' UTC · '+x.n+'"></i>').join("")+
+    '</div><div class="sparkax"><span>'+hm(h[0].hour)+'</span><span>messages per hour, last 24 h (UTC) · peak '+fmt(mx)+'</span><span>now</span></div>';
+}
+function link(l,now){
+  const why=[...l.problems.map(t=>'<div class="bad-t">● '+esc(t)+'</div>'),...l.warnings.map(t=>'<div class="warn-t">● '+esc(t)+'</div>')].join("");
+  const db=l.db||{},hr=(db.hourly||[]),last=hr.length?hr[hr.length-1].n:null,day=hr.reduce((a,x)=>a+x.n,0);
+  const feeds=l.feeds.length?l.feeds.map(f=>'<div><span class="mono">'+esc(f.dest)+'</span> <span class="n">'+esc(f.kind)+'</span> '+
+      (f.ok?'<span class="ok-t">'+(f.proto==="udp"?"socket open":"connected")+'</span>':f.down?'<span class="bad-t">not sending (receiver down)</span>':'<span class="warn-t">'+(f.state?esc(f.state.toLowerCase()):"no socket")+'</span>')+'</div>').join("")
+    :'<span class="n">none configured</span>';
+  const al=l.alerts;
+  const alerts=!al?'<span class="n">no log configured</span>':al.error?'<span class="warn-t">'+esc(al.error)+'</span>':
+    '<span class="'+(al.hour?"warn-t":"ok-t")+'">'+al.hour+' in the last hour</span> <span class="n">· '+al.day+' in 24 h'+
+    (al.source==="file"?' (counted since this page started '+age(now-al.since)+' ago)':'')+'</span>'+
+    (al.last?'<details><summary>last</summary><div class="cmd">'+esc(al.last)+'</div></details>':'');
+  const pages=l.pages.map(p=>p.local?'<span title="127.0.0.1 only on the station: reach it through an SSH tunnel">'+esc(p.label)+' :'+p.port+' (local)</span>':
+    '<a href="'+samehost(p.port)+'" target="_blank" rel="noopener">'+esc(p.label)+' :'+p.port+'</a>').join("");
+  const sdr=(D.sdrs||[]).find(d=>l.sdr&&(d.serial||"").toUpperCase().includes(l.sdr.toUpperCase()));
+  const sdrTxt=!l.sdr?'<span class="n">not configured</span>':!sdr?'<span class="bad-t">'+esc(l.sdr)+' not plugged in</span>':
+    esc(sdr.kind)+' <span class="n mono">'+esc(l.sdr)+'</span> · '+(sdr.holders.length?'held by '+sdr.holders.map(h=>esc(h.name)).join(", "):'<span class="n">free</span>');
+  return '<div class="link '+l.state+'"><div class="head"><span class="dot '+l.state+'"></span><h3>'+esc(l.name)+'</h3><span class="pill '+l.state+'">'+WORD[l.state]+'</span></div>'+
+    '<div class="what">'+esc(l.what)+'</div>'+(why?'<div class="why">'+why+'</div>':'')+
+    '<table>'+compRow("Receiver",l.receiver,now)+'<tr><td class="k">SDR</td><td>'+sdrTxt+'</td></tr>'+
+    '<tr><td class="k">Feeds</td><td>'+feeds+'</td></tr>'+compRow("Dashboard",l.dashboard,now)+compRow("Rollup",l.rollup,now)+
+    '<tr><td class="k">Data</td><td>'+(db.error?'<span class="warn-t">'+esc(db.error)+'</span>':
+      'newest record <b>'+age(db.age)+'</b> ago <span class="n">· '+fmt(last)+' this hour · '+fmt(day)+' in 24 h · database '+bytes(db.size)+'</span>'+spark(hr))+'</td></tr>'+
+    '<tr><td class="k">Log alerts</td><td>'+alerts+'</td></tr>'+
+    '<tr><td class="k">Pages</td><td class="pages">'+(pages||'<span class="n">none</span>')+'</td></tr></table></div>';
+}
+function render(){
+  const now=D.now,h=D.host;
+  document.title="Station Observatory · "+D.station;
+  $("title").textContent=D.station;
+  $("sub").textContent="station health · "+h.hostname+" · every receiver, its SDR, feeds, data and logs";
+  $("status").innerHTML='<span class="dot '+D.state+'"></span>'+WORD[D.state]+' · updated '+new Date().toLocaleTimeString();
+  const A=D.attention;
+  $("attnh").textContent=A.length?A.filter(a=>a.state==="bad").length+" down · "+A.filter(a=>a.state==="warn").length+" to look at":"";
+  $("attn").innerHTML=A.length?A.map(a=>'<li><span class="dot '+a.state+'"></span><b>'+esc(a.what)+'</b>'+esc(a.text)+'</li>').join(""):
+    '<li class="allgood"><span class="dot ok"></span>Every receiver is running, feeding and up to date.</li>';
+  const disk=h.disks.map(d=>Math.round(100*d.used/d.total)+'%').join(" · ");
+  $("host").innerHTML=[card("Host up",age(h.uptime),esc(h.kernel)),
+    card("Load",h.load[0].toFixed(2),"of "+h.cpus+" CPUs · "+h.load[1].toFixed(2)+" / "+h.load[2].toFixed(2)),
+    card("Memory",bytes(h.mem_total-h.mem_avail),"of "+bytes(h.mem_total)),
+    card("Disk",disk,h.disks.map(d=>bytes(d.free)+" free").join(" · ")),
+    card("Temperature",h.temp==null?"–":Math.round(h.temp)+" °C","hottest sensor"),
+    card("Clock",h.ntp==null?"–":h.ntp?'<span class="ok-t">NTP</span>':'<span class="warn-t">not synced</span>',"record times across stations")].join("");
+  $("links").innerHTML=D.links.map(l=>link(l,now)).join("");
+  $("sdrs").innerHTML=D.sdrs.length?'<table><tr><th>Device</th><th>Serial</th><th>USB</th><th>Held by</th></tr>'+D.sdrs.map(d=>'<tr><td>'+esc(d.kind)+
+    ' <span class="n">'+esc(d.id)+'</span></td><td class="mono">'+esc(d.serial)+'</td><td class="n mono">'+esc(d.node)+' · '+esc(d.speed)+' Mb/s</td><td>'+
+    (d.holders.length?d.holders.map(x=>esc(x.name)+' <span class="n">pid '+x.pid+'</span>').join("<br>"):'<span class="n">free</span>')+'</td></tr>').join("")+'</table>'
+    :'<div class="empty">no USB SDRs found</div>';
+}
+async function load(){
+  try{const r=await fetch("/api/status",{cache:"no-store"});D=await r.json();}
+  catch(e){$("status").innerHTML='<span class="dot bad"></span>station observatory not answering';return;}
+  if(D.error){$("status").innerHTML='<span class="dot bad"></span>'+esc(D.error);return;}
+  render();
+}
+load();setInterval(load,15000);
+</script>
+</body></html>

@@ -1,0 +1,45 @@
+{
+  "station": "XX-STATION",
+  "refresh_s": 15,
+  "links": [
+    {
+      "name": "VDL2",
+      "what": "VHF data link, 136 MHz",
+      "receiver": {"unit": "vdl2-sniffer.service"},
+      "dashboard": {"unit": "vdl2-observatory.service"},
+      "rollup": {"unit": "vdl2-rollup.timer"},
+      "sdr": "00000001",
+      "db": {"path": "/var/lib/vdl2-observatory/observatory.db",
+             "latest": "SELECT MAX(t) FROM messages",
+             "hourly": "SELECT hour, SUM(count) FROM vdl2_msg_hourly WHERE hour >= ? GROUP BY hour"},
+      "log": {"journal": "vdl2-sniffer.service"},
+      "pages": [{"label": "Live", "port": 8889}, {"label": "Observatory", "port": 8891}]
+    },
+    {
+      "name": "Iridium",
+      "what": "Iridium L-band, 1616-1626.5 MHz",
+      "receiver": {"unit": "iridium-sniffer.service"},
+      "dashboard": {"unit": "observatory-trends.service"},
+      "rollup": {"unit": "observatory-rollup.timer"},
+      "sdr": "0000000000000002",
+      "db": {"path": "/var/lib/iridium-observatory/observatory.db",
+             "latest": "SELECT MAX(t) FROM messages",
+             "hourly": "SELECT hour, SUM(count) FROM msg_hourly WHERE hour >= ? GROUP BY hour"},
+      "log": {"journal": "iridium-sniffer.service"},
+      "pages": [{"label": "Live", "port": 8888}, {"label": "Observatory", "port": 8890}]
+    },
+    {
+      "name": "Inmarsat",
+      "what": "Inmarsat L-band, 1537-1546 MHz",
+      "receiver": {"unit": "inmarsat-rx.service"},
+      "dashboard": {"unit": "inmarsat-observatory.service"},
+      "rollup": {"unit": "inmarsat-rollup.timer"},
+      "sdr": "0000000000000003",
+      "db": {"path": "/var/lib/inmarsat-observatory/observatory.db",
+             "latest": "SELECT MAX(t) FROM messages",
+             "hourly": "SELECT hour, SUM(count) FROM msg_hourly WHERE hour >= ? GROUP BY hour"},
+      "log": {"journal": "inmarsat-rx.service", "pattern": "^Dropped [0-9]+ samples|error|cannot"},
+      "pages": [{"label": "Live", "port": 8892}, {"label": "Observatory", "port": 8893}]
+    }
+  ]
+}

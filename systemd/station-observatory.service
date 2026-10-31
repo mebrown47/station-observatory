@@ -1,0 +1,18 @@
+# Station Observatory as a systemd user service: no root needed.
+#   mkdir -p ~/.config/systemd/user
+#   cp systemd/station-observatory.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now station-observatory.service
+#   sudo loginctl enable-linger "$USER"     # once, so it starts at boot without a login
+# Edit the paths below if the repo is not in ~/station-observatory.
+[Unit]
+Description=Station Observatory: health of every receiver on this station
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 %h/station-observatory/server.py --config %h/station-observatory/station.json
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=default.target
